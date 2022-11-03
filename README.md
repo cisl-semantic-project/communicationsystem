@@ -18,7 +18,7 @@ opencv
 ### How to install
 1. env
 ```sh
-conda create -n communicationsystem
+conda create -n communicationsystem python=3.10
 ```
 2. activate
 ```sh
