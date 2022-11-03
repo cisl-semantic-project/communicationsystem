@@ -34,5 +34,5 @@ conda install --file requirements_conda.txt
 ## How to run
 
 ```sh
-conda install numpy
+python main.py
 ``` 
