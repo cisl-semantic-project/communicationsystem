@@ -16,7 +16,7 @@ opencv
 ```
 
 ### How to install
-1. python version을 지정을 안하고 생성해야 설치가 되네요(3.8.13으로 설치됨)(아마도 conda env의 python version을 지정하면서 생기는 package들이 충돌을 일으킴)
+1. env
 ```sh
 conda create -n communicationsystem
 ```
