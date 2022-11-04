@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-
+import math
 def data2bit(inp,bit_len=None):
     '''
         넘파이의 데이터와 각 원소의 비트수(입력안하면 가장 큰 비트로 맞춤)를 입력 받아서 [비트길이 x 1]형태의 비트 넘파이로 변환한다.
@@ -85,21 +85,45 @@ def bit2data(inp):
         구현해야함
     '''
     return
+def bit2data(inp_bit, size=None):
+    cnt1 = 0
+    cnt2 = 0
+    tmp = 0
+    result = []
+    result_tmp = []
+    a = int(np.size(inp_bit) / (size[0]*size[1]))  # a:bits 수
+
+    for i in range(np.shape(inp_bit)[0]):
+        if inp_bit[i][0] == 1:
+            tmp += math.pow(2, a-cnt1-1)
+        cnt1 += 1
+        if cnt1 == a:
+            result_tmp.append(int(tmp))
+            cnt2 += 1
+            cnt1 = 0
+            tmp = 0
+
+        if cnt2 == size[1]:
+            result.append(result_tmp)
+            result_tmp = []
+            cnt2 = 0
+    return np.array(result)
+
+def cal_ber(origin, recon):
+    error = sum(origin.flatten() != recon.flatten())
+    ber = error/(np.size(origin))
+    return ber
 
 '''
 이미지 테스트 
 '''
-img_color = cv2.imread('Lenna.png', cv2.IMREAD_COLOR)
-img_gray = cv2.cvtColor(img_color, cv2.COLOR_BGR2GRAY)
-inp = img_gray
+def inp_with_noise(inp,std,bit_len):
+    output_bit = data2bit(inp, bit_len)
+    output_symbol = modulation(output_bit, scheme="BPSK")
+    y = channel_awgn(output_symbol, 0, std)
+    demod_output = demodulation(y)
+    output_data = bit2data(demod_output, np.shape(inp))
+    return output_data
 
-output_bit = data2bit(inp, 8)
-output_symbol = modulation(output_bit,scheme = "BPSK")
-y = channel_awgn(output_symbol,0,1)
-demod_output = demodulation(y)
-
-output_data = bit2data(output_bit,8)
-
-pass
-
+#inp_with_noise(inp,1,8)
 

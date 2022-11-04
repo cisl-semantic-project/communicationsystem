@@ -17,27 +17,26 @@ def nothing(x):
     pass
 
 cv2.namedWindow('with noise')
-cv2.createTrackbar('standard', 'with noise', 0, 250, nothing)
-cv2.setTrackbarPos('standard', 'with noise', 127)
+cv2.createTrackbar('분산= value/10', 'with noise', 1, 50, nothing)
+cv2.setTrackbarPos('분산= value/10', 'with noise', 10)
 
 img_color = cv2.imread('Lenna.png', cv2.IMREAD_COLOR)
 img_gray = cv2.cvtColor(img_color, cv2.COLOR_BGR2GRAY)
 cv2.imshow('Gray', img_gray)
 
-std = 0
-img_noise = make_noise(std, img_gray)
+std = 1
+bit_len = 8
+#img_noise = make_noise(std, img_gray)
+img_noise = deci2bit.inp_with_noise(img_gray,std,bit_len)
+
 while(True):
-    std = cv2.getTrackbarPos('standard', 'with noise')/10
-    img_noise = make_noise(std, img_gray)
-
+    std = cv2.getTrackbarPos('분산= value/10', 'with noise')/10
+    #img_noise = make_noise(std, img_gray)
+    #cv2.imshow('with noise', img_noise.astype(np.uint8))
+    img_noise = deci2bit.inp_with_noise(img_gray, std, bit_len)
     cv2.imshow('with noise', img_noise.astype(np.uint8))
-
-#    img_result = cv2.bitwise_and(img_color, img_color, mask = img_binary)
- #   cv2.imshow('Result', img_result)
-
 
     if cv2.waitKey(100)&0xFF == 27:
         break
-
 
 cv2.destroyAllWindows()
