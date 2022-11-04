@@ -23,6 +23,17 @@ def deci2bit(input,bit_len=None):
             bits_ = to_binary(int(input[i][j]), bit_len)
             output_list.append(bits_)
     return np.reshape(np.array(output_list), (-1, 1))
+def mod_bpsk(inputs):
+    bpsk = np.where(inputs == 0, -1, 1)
+    return bpsk
+
+def demod_bpsk(inputs):
+    origin_data = (inputs > 0) + np.zeros(np.shape(inputs))
+    return origin_data
+
+def channel_awgn(inputs, mu=0, sigma=0.1):
+    output = inputs + np.random.normal(mu, sigma, np.shape(inputs))
+    return output
 
 '''이미지 테스트 
 '''
@@ -31,8 +42,13 @@ img_gray = cv2.cvtColor(img_color, cv2.COLOR_BGR2GRAY)
 #inp =  np.random.randint(100, 130, size=(9, 10))
 inp =  img_gray
 
-print(inp)
-print(deci2bit(inp,8))
+a = deci2bit(inp,8)
+b =  mod_bpsk(a)
+c = (demod_bpsk(b))
+d = channel_awgn(b,0,1)
+e = (demod_bpsk(d))
 
+np.reshpe(e,np.shape(inp))
+pass
 
 
