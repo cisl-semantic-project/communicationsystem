@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import deci2bit
 
 def make_noise(std, img):
     height, width = img.shape
@@ -20,8 +21,6 @@ cv2.createTrackbar('standard', 'with noise', 0, 250, nothing)
 cv2.setTrackbarPos('standard', 'with noise', 127)
 
 img_color = cv2.imread('Lenna.png', cv2.IMREAD_COLOR)
-#cv2.imshow('Color', img_color)
-
 img_gray = cv2.cvtColor(img_color, cv2.COLOR_BGR2GRAY)
 cv2.imshow('Gray', img_gray)
 
