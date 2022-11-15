@@ -11,7 +11,7 @@ def make_noise(std, img):
             set_noise = std * make_noise
             img_noise[i][a] = img[i][a] + set_noise
     return img_noise
-def nothing(x)
+def nothing(x):
     pass
 
 cv2.namedWindow('with noise')
