@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
-import deci2bit
-import sourcecoding
+import communicationsystem
+
 def make_noise(std, img):
     height, width = img.shape
     img_noise = np.zeros((height, width), dtype=np.float)

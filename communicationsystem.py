@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import math
+import sourcecoding
 def data2bit(inp,bit_len=None):
     '''
         넘파이의 데이터와 각 원소의 비트수(입력안하면 가장 큰 비트로 맞춤)를 입력 받아서 [비트길이 x 1]형태의 비트 넘파이로 변환한다.
