@@ -1,37 +1,32 @@
 import numpy as np
-import cv2
 import math
-import sourcecoding
-def data2bit(inp,bit_len=None):
+import sourceencoder
+def source_encoder(inp_data : np.ndarray, inp_bit_len : int = None) ->  np.ndarray:
     '''
-        넘파이의 데이터와 각 원소의 비트수(입력안하면 가장 큰 비트로 맞춤)를 입력 받아서 [비트길이 x 1]형태의 비트 넘파이로 변환한다.
+    구현 목표
+    1. 입력 데이터가 txt파일일 때, numpy.ndarry에다가 int형으로 매핑해야함.
     '''
-    def to_binary(number, max_len):
-        '''
-        int 데이터와 길이를 입력하면 입력 길이짜리 bit list를 반환한다.
-        '''
-        bits = "{0:b}".format(number, '#b')
-        num_bits = len(bits)
-        bit_list = list(map(int, bits))
 
-        bit_list = (max_len - num_bits) * [0] + bit_list
-        return bit_list
-
-    output_list = []
-    row, col = np.shape(inp)
-    if bit_len ==None:
-        bit_len = int(np.max(inp)).bit_length()
-
-    for i in range(row):
-        for j in range(col):
-            bits_ = to_binary(int(inp[i][j]), bit_len)
-            output_list.append(bits_)
-    return np.reshape(np.array(output_list), (-1, 1))
-def source_coding(bit_stream) :
     '''
-    구현해야함
+    넘파이의 데이터와 각 원소의 비트수(입력안하면 가장 큰 비트로 맞춤)를 입력 받아서 [비트길이 x 1]형태의 비트 넘파이로 변환한다.
     '''
-    return bit_stream
+    if inp_bit_len == None:
+        inp_bit_len = int(np.max(inp_data)).bit_length()
+
+    assert inp_bit_len >= int(np.max(inp_data)).bit_length(), '입력 비트길이가 데이터의 최대 값의 비트 길이보다 커야함'
+
+    columned_inp = inp_data.reshape(-1, 1)  # 입력 넘파이를 컬럼 벡터로 변환해줌 size:[n x 1]
+    inp_bit = np.unpackbits(columned_inp, axis=1, count=inp_bit_len)
+
+    ########### 디모듈에서 활용가능
+    b = np.packbits(inp_bit, axis=1)
+    columned_inp = columned_inp.reshape(np.shape(inp_data))
+    np.array_equal(columned_inp, inp_data)
+    ###########
+    ### source_encoder
+
+    ###
+    return np.reshape(inp_bit, (-1, 1))
 def channel_coding(bit_stream):
     '''
         구현해야함
@@ -119,8 +114,11 @@ def cal_ber(origin, recon):
 이미지 테스트 
 '''
 def inp_with_noise(inp,std,bit_len):
-    output_bit = data2bit(inp, bit_len)
-    output_symbol = modulation(output_bit, scheme="BPSK")
+    '''
+    디지털통신 시스템에 입력값을 통과시키는 함수
+    '''
+    result_sourcecoding = source_encoder(inp,bit_len)
+    output_symbol = modulation(result_sourcecoding, scheme="BPSK")
     y = channel_awgn(output_symbol, 0, std)
     demod_output = demodulation(y)
     output_data = bit2data(demod_output, np.shape(inp))

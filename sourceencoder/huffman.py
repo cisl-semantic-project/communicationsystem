@@ -127,7 +127,7 @@ class HuffmanCoding:
 		def __eq__(self, other):
 			if(other == None):
 				return False
-			if(not isinstance(other, HeapNode)):
+			if(not isinstance(other, self.HeapNode)):
 				return False
 			return self.freq == other.freq
 
