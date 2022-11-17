@@ -23,7 +23,7 @@ conda create -n communicationsystem python=3.10
 2. activate
 ```sh
 activate communicationsystem
-cd PycharmProjects\pythonproject\communicationsystem
+cd PycharmProjects\communicationsystem
 ```
 
 3. install requirements

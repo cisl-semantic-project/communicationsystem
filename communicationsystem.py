@@ -10,9 +10,8 @@ def source_encoder(inp_data : np.ndarray, frequency_dict : dict, char_to_idx_dic
     '''
 
     ### source_encoder
-
-    h = huffman2.HuffmanCoding(inp_data,frequency_dict,char_to_idx_dict)
-
+    columned_inp = inp_data.reshape(-1, 1)
+    h = huffman2.HuffmanCoding(columned_inp,frequency_dict,char_to_idx_dict)
     draw_graph = False
     result_np = h.compress(draw_graph)
     ###
@@ -22,7 +21,7 @@ def source_encoder(inp_data : np.ndarray, frequency_dict : dict, char_to_idx_dic
 
     assert inp_bit_len >= int(np.max(inp_data)).bit_length(), '입력 비트길이가 데이터의 최대 값의 비트 길이보다 커야함'
 
-    columned_inp = inp_data.reshape(-1, 1)  # 입력 넘파이를 컬럼 벡터로 변환해줌 size:[n x 1]
+      # 입력 넘파이를 컬럼 벡터로 변환해줌 size:[n x 1]
     inp_bit = np.unpackbits(columned_inp.view('uint8'),axis=1, count=inp_bit_len,bitorder='little') #데이터를 바이트로 나누고 비트로 변경함
     ########### 디모듈에서 활용가능
     if columned_inp.dtype =="uint8":

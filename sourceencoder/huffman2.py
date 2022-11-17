@@ -8,6 +8,7 @@ https://zephyrus1111.tistory.com/132
 import heapq
 import os
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
 class Tree:
 	def __init__(self, root):
@@ -167,8 +168,9 @@ class HuffmanCoding:
 			return
 
 		if(root.char != None):
-			self.codes[root.char] = current_code
-			self.reverse_mapping[current_code] = root.char
+			inp_char = self.char_to_idx_dict[root.char]
+			self.codes[inp_char] = current_code
+			self.reverse_mapping[current_code] = inp_char
 			root.code = current_code
 			return
 
@@ -182,9 +184,9 @@ class HuffmanCoding:
 		self.make_codes_helper(root, current_code)
 
 	def get_encoded_np(self, inp_np):
-		inp_np
-		for character in text:
-			encoded_text += self.codes[character]
+		reference_dict = dict([a, list(map(int,list(x)))] for a, x in self.codes.items())
+		encoded_text = np.array([reference_dict[x[0]] for x in inp_np])
+
 		return encoded_text
 
 
@@ -218,31 +220,8 @@ class HuffmanCoding:
 
 		encoded_np = self.get_encoded_np(self.inp_np)
 
-		padded_encoded_text = self.pad_encoded_text(encoded_np)
-		b = self.get_byte_array(padded_encoded_text)
-		output.write(bytes(b))
 		print("Compressed")
-		return output_path
-
-		with open(self.path, 'r+',encoding='UTF-8') as file, open(output_path, 'wb') as output:
-			text = file.read()
-			text = text.rstrip()
-
-			frequency = self.make_frequency_dict(text)
-			self.make_heap(frequency) #
-			self.merge_nodes(True) #여기서 huffman coding에서 볼 수 있는  tree를 생성함. True를 통해 허프만 결과 저장가능
-			self.make_codes()
-			if draw_graph:
-				self.tree.drawTree()
-
-			encoded_text = self.get_encoded_text(text)
-			padded_encoded_text = self.pad_encoded_text(encoded_text)
-
-			b = self.get_byte_array(padded_encoded_text)
-			output.write(bytes(b))
-
-		print("Compressed")
-		return output_path
+		return encoded_np
 
 
 	""" functions for decompression: """
