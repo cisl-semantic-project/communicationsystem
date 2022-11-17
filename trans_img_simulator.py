@@ -25,15 +25,14 @@ img_gray = cv2.cvtColor(img_color, cv2.COLOR_BGR2GRAY)
 cv2.imshow('Gray', img_gray)
 
 std = 1
-bit_len = 8
 #img_noise = make_noise(std, img_gray)
-img_noise = communicationsystem.inp_with_noise(img_gray,std,bit_len)
+img_noise = communicationsystem.inp_with_noise(inp_file_dir,std)
 
 while(True):
     std = cv2.getTrackbarPos('분산= value/10', 'with noise')/10
     #img_noise = make_noise(std, img_gray)
     #cv2.imshow('with noise', img_noise.astype(np.uint8))
-    img_noise = communicationsystem.inp_with_noise(img_gray, std, bit_len)
+    img_noise = communicationsystem.inp_with_noise(inp_file_dir, std)
     cv2.imshow('with noise', img_noise.astype(np.uint8))
 
     if cv2.waitKey(1000)&0xFF == 27:
