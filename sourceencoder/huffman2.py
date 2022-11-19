@@ -10,6 +10,8 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+from itertools import chain
+
 class Tree:
 	def __init__(self, root):
 		assert root.isRoot, 'node should be specified as root'
@@ -92,6 +94,7 @@ class HuffmanCoding:
 		self.char_to_idx_dict = char_to_idx_dict
 		self.heap = []
 		self.codes = {}
+		self.max_code_len = 0
 		self.reverse_mapping = {}
 		self.tree = None
 
@@ -173,10 +176,14 @@ class HuffmanCoding:
 			self.codes[inp_char] = current_code
 			self.reverse_mapping[current_code] = inp_char
 			root.code = current_code
+
+			if self.max_code_len < len(current_code):
+				self.max_code_len = len(current_code)
 			return
 
 		self.make_codes_helper(root.leftChild, current_code + "0")
 		self.make_codes_helper(root.rightChild, current_code + "1")
+
 
 
 	def make_codes(self):
@@ -185,14 +192,12 @@ class HuffmanCoding:
 		self.make_codes_helper(root, current_code)
 
 	def get_encoded_np(self, columned_inp):
-		reference_dict = dict([a, list(map(int,list(x)))] for a, x in self.codes.items())
-		encoded_text_list = []
-		encoded_text_num_list = []
-		for x in columned_inp :
-			encoded_text_list = encoded_text_list+ reference_dict[x[0]]
-			encoded_text_num_list.append([len(reference_dict[x[0]])])
-		encoded_text = np.array(encoded_text_list,dtype = "uint8").reshape(-1,1)
-		encoded_text_num = np.array(encoded_text_num_list)
+		reference_dict = dict([a, list(map(int,list(x)))+[None]*(self.max_code_len-len(x))] for a, x in self.codes.items())
+
+		u, inv = np.unique(columned_inp, return_inverse=True)
+		encoded_text_num = np.array([len(self.codes[x]) for x in u], dtype="uint8")[columned_inp].reshape(columned_inp.shape)
+		encoded_text = np.array([reference_dict[x] for x in u])[columned_inp]
+
 
 		return encoded_text, encoded_text_num
 
@@ -222,6 +227,7 @@ class HuffmanCoding:
 		self.make_heap(self.frequency_dict)
 		self.merge_nodes()  # 여기서 huffman coding에서 볼 수 있는  tree를 생성함. True를 통해 허프만 결과 저장가능
 		self.make_codes()
+
 		if draw_graph:
 			self.tree.drawTree()
 

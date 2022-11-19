@@ -3,12 +3,14 @@ from read_file_func import read_file_func
 from sourceencoder import huffman2
 
 class communicationsystem:
-    def __init__(self, inp_data,frequency_dict,data_to_idx_dict,
+    def __init__(self, inp_data,mapped_data,frequency_dict,data_to_idx_dict,
                  source_coding_type="NoCompression",inp_bit_len = None,
                  modulation_scheme = None,
                  mu = 0, std =1):
+
         ##source코딩에 필요한 파라미터
         self.inp_data =inp_data
+        self.mapped_data =mapped_data
         self.frequency_dict = frequency_dict
         self.data_to_idx_dict = data_to_idx_dict
         self.source_coding_type = source_coding_type
@@ -28,7 +30,7 @@ def source_encoder(inp_class):
     '''
     넘파이 데이터와 각 원소의 비트수(입력안하면 가장 큰 비트로 맞춤)를 입력 받아서 [비트길이 x 1]형태의 비트 넘파이로 변환한다.
     '''
-    columned_inp = inp_class.inp_data.reshape(-1, 1)
+    columned_inp = inp_class.mapped_data.reshape(-1, 1)
     ######## source_encoder
     if inp_class.source_coding_type == "Huffman":
         h = huffman2.HuffmanCoding(columned_inp,inp_class.frequency_dict,inp_class.data_to_idx_dict)
@@ -36,6 +38,7 @@ def source_encoder(inp_class):
         source_coding_result_np,source_coding_result_num_np = h.compress(draw_graph)
 
     elif inp_class.source_coding_type == "NoCompression":
+        print("%d length source coding"%inp_class.inp_bit_len)
         source_coding_result_np = np.flip(np.unpackbits(columned_inp.view('uint8'), axis=1, count=inp_class.inp_bit_len,bitorder='little'))  # 데이터를 바이트로 나누고 비트로 변경함
         source_coding_result_np = np.reshape(source_coding_result_np, (-1, 1))
         source_coding_result_num_np = np.array([inp_class.inp_bit_len]*columned_inp.size)
@@ -51,13 +54,11 @@ def source_encoder(inp_class):
             raise Exception("입력 데이터 자료형 확인필요")
         b = np.pad(np.flip(b), ((0, 0), (0, padding_num)))
         a = np.packbits(b, axis=1, bitorder='little').view(columned_inp.dtype)
-        a = a.reshape(np.shape(inp_class.inp_numpy))
-        np.array_equal(inp_class.inp_numpy, a)  # 데이터의 입 출력이 동일함을 확인할 수 있음.
+        a = a.reshape(np.shape(inp_class.inp_data))
+        np.array_equal(inp_class.inp_data, a)  # 데이터의 입 출력이 동일함을 확인할 수 있음.
         ########### 디모듈에서 활용하자
     else:
         raise Exception("압축 알고리즘 이름 확인 필요함.")
-
-    assert inp_class.inp_bit_len >= np.max(source_coding_result_num_np), '입력 비트길이가 데이터의 최대 값의 비트 길이보다 커야함'
     ########
     inp_class.source_coding_result_np = source_coding_result_np
     inp_class.source_coding_result_num_np = source_coding_result_num_np
@@ -70,12 +71,6 @@ def modulation(inp_class):
     '''
     데이터와 비트 길이, scheme을 입력에 따라 symbol을 반환
     '''
-    def mod_bpsk(inp_bit):
-        '''
-        입력 bit 넘파이가 0이면 -1 1이면 1로 변환하는 BPSK 모듈레이션
-        '''
-        out_sym = np.where(inp_bit == 0, -1, 1)
-
     if inp_class.modulation_scheme == "BPSK":
         inp_class.modulation_result = np.where(inp_class.source_coding_result_np == 0, -1, 1)
     else:
@@ -103,19 +98,20 @@ def inp_with_noise(inp_file_dir):
     디지털통신 시스템에 입력값을 통과시키는 함수
     '''
 
-    inp_data, frequency_dict, data_to_idx_dict, bit_len = read_file_func(inp_file_dir)
+    inp_data, mapped_data, frequency_dict, data_to_idx_dict, bit_len = read_file_func(inp_file_dir)
 
     source_coding_type = "Huffman"
     #source_coding_type = "NoCompression"
     modulation_scheme = "BPSK"
     mu = 0
     std = 1
-    inp_class = communicationsystem(inp_data,frequency_dict,data_to_idx_dict,
+    inp_class = communicationsystem(inp_data,mapped_data,frequency_dict,data_to_idx_dict,
                                     source_coding_type,bit_len,
                                     modulation_scheme,
                                     mu,std)
 
     source_encoder(inp_class)
+
     modulation(inp_class)
 
     channel_awgn(inp_class)
