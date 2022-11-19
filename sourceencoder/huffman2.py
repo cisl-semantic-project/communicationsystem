@@ -185,9 +185,15 @@ class HuffmanCoding:
 
 	def get_encoded_np(self, inp_np):
 		reference_dict = dict([a, list(map(int,list(x)))] for a, x in self.codes.items())
-		encoded_text = np.array([reference_dict[x[0]] for x in inp_np])
+		encoded_text_list = []
+		encoded_text_num_list = []
+		for x in inp_np :
+			encoded_text_list = encoded_text_list+ reference_dict[x[0]]
+			encoded_text_num_list.append([len(reference_dict[x[0]])])
+		encoded_text = np.array(encoded_text_list,dtype = "uint8").reshape(-1,1)
+		encoded_text_num = np.array(encoded_text_num_list)
 
-		return encoded_text
+		return encoded_text, encoded_text_num
 
 
 	def pad_encoded_text(self, encoded_text):
@@ -218,10 +224,10 @@ class HuffmanCoding:
 		if draw_graph:
 			self.tree.drawTree()
 
-		encoded_np = self.get_encoded_np(self.inp_np)
+		encoded_np,encoded_num_np = self.get_encoded_np(self.inp_np)
 
 		print("Compressed")
-		return encoded_np
+		return encoded_np, encoded_num_np
 
 
 	""" functions for decompression: """
