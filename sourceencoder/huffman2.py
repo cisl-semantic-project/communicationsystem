@@ -54,7 +54,7 @@ class Tree:
 					bbox = dict(boxstyle='square', fc=colors[node.getLevel() - 1], pad=1)
 				## 텍스트 표시
 				if node.char !=None:
-					out_txt = node.char +" : "+str(node.freq)+", "+out_txt
+					out_txt = str(node.char) +" : "+str(node.freq)+", "+out_txt
 				else :
 					out_txt = str(node.freq)
 				ax.text(node.x, node.y, out_txt, bbox=bbox, fontsize=10, ha='center', va='center')
@@ -86,8 +86,8 @@ class Tree:
 		plt.savefig('result_huffman.png')
 
 class HuffmanCoding:
-	def __init__(self, inp_np,frequency_dict,char_to_idx_dict):
-		self.inp_np = inp_np
+	def __init__(self, columned_inp,frequency_dict,char_to_idx_dict):
+		self.columned_inp = columned_inp
 		self.frequency_dict = frequency_dict
 		self.char_to_idx_dict = char_to_idx_dict
 		self.heap = []
@@ -168,6 +168,7 @@ class HuffmanCoding:
 			return
 
 		if(root.char != None):
+
 			inp_char = self.char_to_idx_dict[root.char]
 			self.codes[inp_char] = current_code
 			self.reverse_mapping[current_code] = inp_char
@@ -183,11 +184,11 @@ class HuffmanCoding:
 		current_code = ""
 		self.make_codes_helper(root, current_code)
 
-	def get_encoded_np(self, inp_np):
+	def get_encoded_np(self, columned_inp):
 		reference_dict = dict([a, list(map(int,list(x)))] for a, x in self.codes.items())
 		encoded_text_list = []
 		encoded_text_num_list = []
-		for x in inp_np :
+		for x in columned_inp :
 			encoded_text_list = encoded_text_list+ reference_dict[x[0]]
 			encoded_text_num_list.append([len(reference_dict[x[0]])])
 		encoded_text = np.array(encoded_text_list,dtype = "uint8").reshape(-1,1)
@@ -224,7 +225,7 @@ class HuffmanCoding:
 		if draw_graph:
 			self.tree.drawTree()
 
-		encoded_np,encoded_num_np = self.get_encoded_np(self.inp_np)
+		encoded_np,encoded_num_np = self.get_encoded_np(self.columned_inp)
 
 		print("Compressed")
 		return encoded_np, encoded_num_np
