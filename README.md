@@ -1,5 +1,7 @@
 # Communication System
-![hyeongeonimg](1.png)
+![hyeongeonimg](for_study/study_board.png)
+![hyeongeonimg](for_study/system_diagram.png)
+
 코드 수정 목록
 ```python
 # 시작 _ 11.03
