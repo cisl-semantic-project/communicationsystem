@@ -1,6 +1,5 @@
 # Communication System
-![hyeongeonimg](for_study/study_board.png)
-![hyeongeonimg](for_study/system_diagram.png)
+![system_diagram](for_study/system_diagram.png)
 
 코드 수정 목록
 ```python

@@ -1,41 +1,46 @@
 import cv2
-import numpy as np
 import communicationsystem
-
-def make_noise(std, img):
-    height, width = img.shape
-    img_noise = np.zeros((height, width), dtype=np.float)
-    for i in range(height):
-        for a in range(width):
-            make_noise = np.random.normal()  # 랜덤함수를 이용하여 노이즈 적용
-            set_noise = std * make_noise
-            img_noise[i][a] = img[i][a] + set_noise
-    return img_noise
+from math import log10
 def nothing(x):
     pass
 
-cv2.namedWindow('with noise')
-cv2.createTrackbar('분산= value/10', 'with noise', 1, 50, nothing)
-cv2.setTrackbarPos('분산= value/10', 'with noise', 10)
+cv2.namedWindow('noise test')
+
 
 inp_file_dir = 'Lenna.png'
-
-img_color = cv2.imread(inp_file_dir, cv2.IMREAD_COLOR)
-img_gray = cv2.cvtColor(img_color, cv2.COLOR_BGR2GRAY)
-cv2.imshow('Gray', img_gray)
-
+#source_coding_type = "Huffman"
+source_coding_type = "NoCompression"
+modulation_scheme = "BPSK"
+mu = 0
 std = 1
-#img_noise = make_noise(std, img_gray)
-img_noise = communicationsystem.inp_with_noise(inp_file_dir,std)
+
+name_window = 'noise test'
+track_bar_name = '표준편차= value/50'
+
+cv2.namedWindow(name_window)
+cv2.createTrackbar(track_bar_name, name_window, std, 200, nothing)
+
+blue = (255, 0, 0)
+green= (0, 255, 0)
+red= (0, 0, 255)
+white= (255, 255, 255)
+font =  cv2.FONT_HERSHEY_PLAIN
 
 while(True):
-    std = cv2.getTrackbarPos('분산= value/10', 'with noise')/10
-    #img_noise = make_noise(std, img_gray)
-    #cv2.imshow('with noise', img_noise.astype(np.uint8))
-    img_noise = communicationsystem.inp_with_noise(inp_file_dir, std)
-    cv2.imshow('with noise', img_noise.astype(np.uint8))
+    std = cv2.getTrackbarPos(track_bar_name, name_window) / 50
+    if std==0 :
+        SNR_txt = "infinity"
+    else:
+        SNR_txt = "%.1fdB"%(10 * log10(1 / (std ** 2)))
 
-    if cv2.waitKey(1000)&0xFF == 27:
+
+    img_noise = communicationsystem.inp_with_noise(inp_file_dir, source_coding_type, modulation_scheme,
+                                                   mu, std)
+    cv2.putText(img_noise, SNR_txt, (380, 40), font, 2, red, 3)
+
+    cv2.imshow(name_window, img_noise)
+
+    if cv2.waitKey(100)&0xFF == 27:
         break
 
 cv2.destroyAllWindows()

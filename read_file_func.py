@@ -28,22 +28,17 @@ def read_file_func(inp_file_dir):
         inp_data_np = np.copy(inp_data)
 
         bit_len = 8  # 이미지의 비트길이는 추후 수정해야할 듯
-        frequency_dict = {}
-        data_to_idx_dict = {}
-        idx_to_data_dict = {}
-        mapped_data_list = []
-        for pix_array in inp_data_np:
-            for pix_val in pix_array:
-                if not pix_val in frequency_dict:
-                    frequency_dict[pix_val] = 0
-                    idx = len(data_to_idx_dict)
-                    data_to_idx_dict[pix_val] = idx  # pix_value에 번호를 매김
-                    idx_to_data_dict[idx] = pix_val
-                mapped_data_list.append(data_to_idx_dict[pix_val])
-                frequency_dict[pix_val] += 1
+
+
+        u, inv,count = np.unique(inp_data_np, return_inverse=True, return_counts=True)
+        frequency_dict = dict(zip(u, count))
+        data_to_idx_dict = dict(zip(u,list(range(0,len(u)))))
+        idx_to_data_dict = dict(zip(list(range(0,len(u))),u))
+
         assert len(data_to_idx_dict) < 65535, "최대 pix 갯수는 65535임."
 
-        mapped_data = np.array(mapped_data_list,dtype = 'uint32').reshape(inp_data.shape)
+        mapped_data = np.array([data_to_idx_dict[val] for val in u],dtype='uint8')[inv].reshape(inp_data_np.shape)
+
 
     assert len(data_to_idx_dict) < 65535, "최대 word 갯수는 65535임."
     assert bit_len <= 32, "입력 데이터의 원소 별 비트 길이는 32비트보다 작아야함."

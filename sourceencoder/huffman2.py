@@ -195,8 +195,8 @@ class HuffmanCoding:
 		reference_dict = dict([a, list(map(int,list(x)))+[None]*(self.max_code_len-len(x))] for a, x in self.codes.items())
 
 		u, inv = np.unique(columned_inp, return_inverse=True)
-		encoded_text_num = np.array([len(self.codes[x]) for x in u], dtype="uint8")[columned_inp].reshape(columned_inp.shape)
-		encoded_text = np.array([reference_dict[x] for x in u])[columned_inp]
+		encoded_text_num = np.array([len(self.codes[x]) for x in u], dtype="uint8")[inv].reshape(columned_inp.shape)
+		encoded_text = np.array([reference_dict[x] for x in u])[inv]
 
 
 		return encoded_text, encoded_text_num
