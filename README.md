@@ -1,5 +1,5 @@
 # Communication System
-
+![hyeongeonimg](1.png)
 코드 수정 목록
 ```python
 # 시작 _ 11.03
@@ -34,5 +34,5 @@ conda install --file requirements_conda.txt
 ## How to run
 
 ```sh
-python main.py
+python trans_img_simulator.py
 ``` 
