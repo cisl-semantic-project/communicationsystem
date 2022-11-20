@@ -1,5 +1,5 @@
 # simulation 예시
-![simul_image](for_study/Ex_trans_img_simulator.png)
+![simul_image](for_study/EX_trans_img_simulator.png)
 # Communication System
 ![system_diagram](for_study/system_diagram.png)
 
