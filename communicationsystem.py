@@ -26,7 +26,9 @@ class communicationsystem:
         self.source_coding_result_np = None
         self.source_coding_result_num_np = None
         self.modulation_result = None
+        self.demodulation_result = None
         self.channel_result = None
+        self.source_decoding_result_np = None
 
         self.output_data = None
 
@@ -103,8 +105,7 @@ def channel_decoding(bit_stream):
     '''
     return bit_stream
 def source_decoder(inp_class) :
-
-    inp_class.output_data = None
+    inp_class.source_decoding_result_np = inp_class.demodulation_result
 def inp_with_noise(inp_file_dir,source_coding_type,modulation_scheme,mu,std):
     '''
     디지털통신 시스템에 입력값을 통과시키는 함수
