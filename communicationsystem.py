@@ -23,6 +23,8 @@ class communicationsystem:
         self.std = std
         self.modulation_scheme = modulation_scheme
 
+        self.data_to_code_dict = None
+        self.code_to_data_dict = None
         self.source_coding_result_np = None
         self.source_coding_result_num_np = None
         self.modulation_result = None
@@ -41,7 +43,7 @@ def source_encoder(inp_class):
     if inp_class.source_coding_type == "Huffman":
         h = huffman2.HuffmanCoding(columned_inp,inp_class.frequency_dict,inp_class.data_to_idx_dict)
         draw_graph = False
-        source_coding_result_np,source_coding_result_num_np = h.compress(draw_graph)
+        source_coding_result_np,source_coding_result_num_np = h.compress(inp_class,draw_graph)
 
     elif inp_class.source_coding_type == "NoCompression":
         print("%d length source coding"%inp_class.inp_bit_len)
@@ -63,17 +65,22 @@ def modulation(inp_class):
     데이터와 비트 길이, scheme을 입력에 따라 symbol을 반환
     '''
     if inp_class.modulation_scheme == "BPSK":
-        inp_class.modulation_result = np.where(inp_class.source_coding_result_np == 0, -1, 1)
+        inp_class.modulation_result = np.where(inp_class.source_coding_result_np == 2, np.nan, inp_class.source_coding_result_np)
+        inp_class.modulation_result = np.where(inp_class.modulation_result == 0, -1, inp_class.modulation_result)
+        #inp_class.modulation_result = np.where(inp_class.source_coding_result_np == 1, 1, inp_class.source_coding_result_np)
+        #inp_class.modulation_result = np.where(inp_class.source_coding_result_np == 1, 1, inp_class.modulation_result)
     else:
         raise Exception('모듈레이션 scheme 확인필요')
 def channel_awgn(inp_class):
-    '''
-    넘파이와 평균, 표준편차를 입력하면 awgn을 더해서 반환함
-    '''
     inp_class.channel_result = inp_class.modulation_result + np.random.normal(inp_class.mu, inp_class.std, inp_class.modulation_result.shape)
 def demodulation(inp_class):
     if inp_class.modulation_scheme == "BPSK":
-        inp_class.demodulation_result = (inp_class.channel_result>0).astype("uint8")
+        inp_class.demodulation_result = np.where(inp_class.channel_result < 0, 0,
+                                               inp_class.channel_result)
+        inp_class.demodulation_result = np.where(inp_class.demodulation_result  > 0, 1,
+                                               inp_class.demodulation_result)
+        inp_class.demodulation_result = np.where(np.isnan(inp_class.demodulation_result),2,inp_class.demodulation_result).astype('uint8')
+
     else:
         raise Exception('모듈레이션 scheme 확인필요')
 def channel_decoding(bit_stream):
@@ -84,7 +91,9 @@ def channel_decoding(bit_stream):
 def source_decoder(inp_class) :
 
     if inp_class.source_coding_type == "Huffman":
-        pass
+        inp_class.code_to_data_dict
+        inp_class.demodulation_result
+
     elif inp_class.source_coding_type == "NoCompression":
         ########### 소스디코딩에서 활용하자
         demodulation_result = np.copy(inp_class.demodulation_result)
@@ -111,9 +120,10 @@ def source_decoder(inp_class) :
 
         if inp_class.ext == ".txt":
             dec_res_inp_data_np = np.copy(inp_class.source_decoding_result_approx_np)  # inp_data_np
-            dec_res_inp_data = np.array([[inp_class.data_to_idx_dict[char] for char in dec_res_inp_data_np]], dtype=inp_class.inp_data.dtype).reshape(
-                inp_class.inp_data.shape)  # inp_data
 
+            u, inv = np.unique(dec_res_inp_data_np, return_inverse=True)
+            dec_res_inp_data = "".join(list(np.array([inp_class.idx_to_data_dict[idx] for idx in u])[inv])) # inp_data
+            inp_class.out_data = dec_res_inp_data
         elif inp_class.ext == ".png":
 
             u, inv = np.unique(inp_class.source_decoding_result_approx_np, return_inverse=True)

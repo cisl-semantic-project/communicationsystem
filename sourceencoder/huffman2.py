@@ -191,14 +191,11 @@ class HuffmanCoding:
 		current_code = ""
 		self.make_codes_helper(root, current_code)
 
-	def get_encoded_np(self, columned_inp):
-		reference_dict = dict([a, list(map(int,list(x)))+[None]*(self.max_code_len-len(x))] for a, x in self.codes.items())
-
+	def get_encoded_np(self, columned_inp,inp_class):
+		inp_class.data_to_code_dict = dict([a, list(map(int,list(x)))+[2]*(self.max_code_len-len(x))] for a, x in self.codes.items())
 		u, inv = np.unique(columned_inp, return_inverse=True)
-		encoded_text_num = np.array([len(self.codes[x]) for x in u], dtype="uint8")[inv].reshape(columned_inp.shape)
-		encoded_text = np.array([reference_dict[x] for x in u])[inv]
-
-
+		encoded_text_num = np.array([len(self.codes[x]) for x in u])[inv].reshape(columned_inp.shape)
+		encoded_text = np.array([inp_class.data_to_code_dict[x] for x in u],dtype='uint8')[inv]
 		return encoded_text, encoded_text_num
 
 
@@ -223,7 +220,7 @@ class HuffmanCoding:
 		return b
 
 
-	def compress(self,draw_graph = False):
+	def compress(self,inp_class,draw_graph = False):
 		self.make_heap(self.frequency_dict)
 		self.merge_nodes()  # 여기서 huffman coding에서 볼 수 있는  tree를 생성함. True를 통해 허프만 결과 저장가능
 		self.make_codes()
@@ -231,7 +228,7 @@ class HuffmanCoding:
 		if draw_graph:
 			self.tree.drawTree()
 
-		encoded_np,encoded_num_np = self.get_encoded_np(self.columned_inp)
+		encoded_np,encoded_num_np = self.get_encoded_np(self.columned_inp,inp_class)
 
 		print("Compressed")
 		return encoded_np, encoded_num_np
