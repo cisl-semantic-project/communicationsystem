@@ -1,10 +1,10 @@
 import numpy as np
 from read_file_func import read_file_func
 from sourceencoder import huffman2
-
+import cv2
 class communicationsystem:
     def __init__(self, ext,inp_data,inp_data_np,mapped_data,frequency_dict,data_to_idx_dict,idx_to_data_dict,
-                 source_coding_type="NoCompression",inp_bit_len = None,
+                 source_coding_type="NoCompression",inp_bit_len = None, draw_huffmantree = False,
                  modulation_scheme = None,
                  mu = 0, std =1):
 
@@ -19,12 +19,14 @@ class communicationsystem:
 
         self.source_coding_type = source_coding_type
         self.inp_bit_len = inp_bit_len
+        self.draw_huffmantree = draw_huffmantree
         self.mu = mu
         self.std = std
         self.modulation_scheme = modulation_scheme
 
         self.data_to_code_dict = None
-        self.code_to_data_dict = None
+        self.u_array = None
+        self.u_array_to_code = None
         self.source_coding_result_np = None
         self.source_coding_result_num_np = None
         self.modulation_result = None
@@ -42,8 +44,7 @@ def source_encoder(inp_class):
     ######## source_encoder
     if inp_class.source_coding_type == "Huffman":
         h = huffman2.HuffmanCoding(columned_inp,inp_class.frequency_dict,inp_class.data_to_idx_dict)
-        draw_graph = False
-        source_coding_result_np,source_coding_result_num_np = h.compress(inp_class,draw_graph)
+        source_coding_result_np,source_coding_result_num_np = h.compress(inp_class,inp_class.draw_huffmantree)
 
     elif inp_class.source_coding_type == "NoCompression":
         print("%d length source coding"%inp_class.inp_bit_len)
@@ -91,11 +92,37 @@ def channel_decoding(bit_stream):
 def source_decoder(inp_class) :
 
     if inp_class.source_coding_type == "Huffman":
-        inp_class.code_to_data_dict
-        inp_class.demodulation_result
+
+        inp_class.source_decoding_result_np = np.zeros_like(inp_class.mapped_data).reshape(-1,1)
+
+        u1,v1 = np.unique((inp_class.u_array_to_code == 2).sum(axis=1),return_inverse=True) # 2의 갯수 array, code 별 2의 갯수,
+
+        u2,v2 = np.unique((inp_class.demodulation_result == 2).sum(axis=1),return_inverse=True)
+
+        for i in u1: #2의 갯수가 가장작은것 부터 큰것까지 순회하겠음.
+            code_idx_arr = np.where(v1 == i)[0]
+            code_arr = inp_class.u_array_to_code[code_idx_arr].astype('int8') # 2의 갯수가 i개인 코드 어레이들 뭉탱이
+
+            demodul_result_idx_arr = np.where(v2 == i)
+
+            for demodul_result_idx in demodul_result_idx_arr[0]  : # 2의 갯수가 i개인 디모듈 어레이들 뭉탱이
+                detection_result = np.argmin(np.power(inp_class.demodulation_result[demodul_result_idx].astype('int8') - code_arr, 2).sum(axis=1))
+                #inp_class.source_decoding_result_np[demodul_result_idx] = code_arr[detection_result] # 나중에 BER등 결과그래프에서 쓰자
+                inp_class.source_decoding_result_np[demodul_result_idx][0] = code_idx_arr[detection_result] #mapped data 결과
+        inp_class.source_decoding_result_np.reshape(inp_class.mapped_data.shape)
+
+        if inp_class.ext == ".txt":
+            u, inv = np.unique(inp_class.source_decoding_result_np, return_inverse=True)  # 여기수정해야함.
+            dec_res_inp_data = "".join(list(np.array([inp_class.idx_to_data_dict[x] for x in u])[inv])) # inp_data
+            inp_class.out_data = dec_res_inp_data
+
+        elif inp_class.ext == ".png":
+            u, inv = np.unique(inp_class.source_decoding_result_np, return_inverse=True)
+            dec_res_inp_data_np = np.array([inp_class.idx_to_data_dict[idx] for idx in u])[inv].reshape(inp_class.inp_data_np.shape)  # inp_data_np
+            inp_class.out_data = np.copy(dec_res_inp_data_np)  # inp_data
+
 
     elif inp_class.source_coding_type == "NoCompression":
-        ########### 소스디코딩에서 활용하자
         demodulation_result = np.copy(inp_class.demodulation_result)
         if inp_class.mapped_data.dtype == "uint8":
             padding_num = 0
@@ -133,7 +160,7 @@ def source_decoder(inp_class) :
 
 
 
-def inp_with_noise(inp_file_dir,source_coding_type,modulation_scheme,mu,std):
+def inp_with_noise(inp_file_dir,source_coding_type,draw_huffmantree,modulation_scheme,mu,std):
     '''
     디지털통신 시스템에 입력값을 통과시키는 함수
     '''
@@ -141,7 +168,7 @@ def inp_with_noise(inp_file_dir,source_coding_type,modulation_scheme,mu,std):
     inp_data,inp_data_np, mapped_data, frequency_dict, data_to_idx_dict,idx_to_data_dict, bit_len, ext = read_file_func(inp_file_dir)
 
     inp_class = communicationsystem(ext, inp_data,inp_data_np,mapped_data,frequency_dict,data_to_idx_dict, idx_to_data_dict,
-                                    source_coding_type,bit_len,
+                                    source_coding_type,bit_len,draw_huffmantree,
                                     modulation_scheme,
                                     mu,std)
 
@@ -155,6 +182,10 @@ def inp_with_noise(inp_file_dir,source_coding_type,modulation_scheme,mu,std):
     source_decoder(inp_class)
 
     np.array_equal(inp_class.mapped_data,  inp_class.source_decoding_result_approx_np)  # 데이터의 입 출력이 동일함을 확인할 수 있음.
+    inp_class.inp_data, inp_class.out_data
+
+    cv2.imwrite('Test1.png', inp_class.inp_data)
+    cv2.imwrite('Test2.png', inp_class.out_data)
 
     return inp_class.out_data
 
