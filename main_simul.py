@@ -4,9 +4,11 @@ import communicationsystem
 
 #inp_file_dir = 'sample.txt'
 inp_file_dir = 'Lenna.png'
-source_coding_type = "Huffman"
-draw_huffmantree = False
-#source_coding_type = "NoCompression"
+#source_coding_type = "Huffman"
+source_coding_type = "NoCompression"
+draw_huffmantree = False #huffman이 아니면 True여도 안그림.
+
+
 modulation_scheme = "BPSK"
 mu = 0
 std = 0.5
