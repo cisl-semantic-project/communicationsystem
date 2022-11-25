@@ -184,15 +184,15 @@ class HuffmanCoding:
 		self.make_codes_helper(root, current_code)
 
 	def get_encoded_np(self,):
-		code_arr = np.array([list(map(int, list(x))) + [2] * (self.max_code_len - len(x)) for a, x in
-				  sorted(self.codes.items(), key=lambda x: x[0])])
+		code_arr = np.array([list(map(int, list(x))) + [2] * (self.max_code_len - len(x)) for a, x in sorted(self.codes.items(), key=lambda x: x[0])])
+		code_num_arr = np.array([len(x) for a, x in sorted(self.codes.items(), key=lambda x: x[0])])
 
 		mapped_data_to_code = code_arr[self.mapped_data].astype('uint8')
-
+		mapped_data_to_code_bit_num = code_num_arr[self.mapped_data]
 		#inp_class.u_array_to_code = np.array([inp_class.data_to_code_dict[x] for x in inp_class.u_array], dtype='uint8')
 		#encoded_text_num = np.array([len(self.codes[x]) for x in self.inp_data_unique_arr])[inv].reshape(columned_inp.shape)
 		#encoded_text = inp_class.u_array_to_code[inv]
-		return mapped_data_to_code, code_arr
+		return mapped_data_to_code, code_arr,mapped_data_to_code_bit_num
 
 	def compress(self,):
 		self.make_heap()
@@ -203,8 +203,8 @@ class HuffmanCoding:
 			self.tree.drawTree()
 
 		#encoded_np,encoded_num_np = self.get_encoded_np()
-		encoded_np, code_arr = self.get_encoded_np()
+		encoded_np, code_arr,mapped_data_to_code_bit_num = self.get_encoded_np()
 
-		return encoded_np,code_arr
+		return encoded_np,code_arr, mapped_data_to_code_bit_num
 
 

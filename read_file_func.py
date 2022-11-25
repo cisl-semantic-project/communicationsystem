@@ -12,16 +12,17 @@ def read_file_func(inp_file_dir):
         bit_len = inp_data_unique_arr.size.bit_length()
 
         if bit_len <=8:
-            mapped_data.dtype = "uint8"
+            to_dtype = "uint8"
         elif bit_len <=16:
-            mapped_data.dtype = "uint16"
+            to_dtype = "uint16"
         elif bit_len <=32:
-            mapped_data.dtype = "uint32"
+            to_dtype = "uint32"
         elif bit_len <= 64:
-            mapped_data.dtype = "uint64"
+            to_dtype = "uint64"
         else:
             assert False, "데이터 한 원소의 비트길이가 너무 김."
 
+        mapped_data = np.array(list(mapped_data), dtype=to_dtype)
         inp_data_unique_arr_idx_arr = np.unique(mapped_data)
 
     else:
