@@ -1,7 +1,6 @@
 import numpy as np
 from read_file_func import read_file_func
 from sourceencoder import huffman2
-import cv2
 class communicationsystem:
     def __init__(self, ext,inp_data,mapped_data,inp_data_unique_arr, inp_data_unique_arr_idx_arr,count,
                  source_coding_type="NoCompression",inp_bit_len = None, draw_huffmantree = False,
@@ -28,7 +27,6 @@ class communicationsystem:
         self.channel_result = None
         self.demodulation_result = None
         self.source_decoding_result_np = None
-        self.source_decoding_result_approx_np = None
         self.out_data = None
 
 def source_encoder(inp_class):
@@ -122,28 +120,9 @@ def source_decoder(inp_class) :
             inp_class.source_decoding_result_np[demodul_result_idx] = detection_result  # mapped data 결과
         '''
         demodulation_result = np.copy(inp_class.demodulation_result)
-        if inp_class.mapped_data.dtype == "uint8":
-            padding_num = 0
-        elif inp_class.mapped_data.dtype == "uint16":
-            padding_num = 16 - inp_class.inp_bit_len
-        elif inp_class.mapped_data.dtype == "uint32":
-            padding_num = 32 - inp_class.inp_bit_len
-        else:
-            assert False, "mapped_data 자료형 확인필요"
-
-        demodulation_result = np.pad(np.flip(demodulation_result), ((0, 0), (0, padding_num)))
         source_decoding_result_np = np.packbits(demodulation_result, axis=1, bitorder='little').view(inp_class.mapped_data.dtype)
-        inp_class.inp_data_unique_arr
-        #######################################################여기고쳐라
-        inp_class.inp_data_unique_arr_idx_arr
-        #여기는 실제로 얻어진 넘파이
-        inp_class.source_decoding_result_np = source_decoding_result_np.reshape(
-            np.shape(inp_class.mapped_data))  # mapped data
-        
-        #여기는 인덱스를 근사한 넘파이
-        max_idx = max(inp_class.idx_to_data_dict.keys())
-        inp_class.source_decoding_result_approx_np = np.where(source_decoding_result_np> max_idx,max_idx,source_decoding_result_np).reshape(
-            np.shape(inp_class.mapped_data))   #dictonary 최대 인덱스보다 큰 애들은 최대 인덱스로 매핑하는 근사.
+        last_idx = inp_class.inp_data_unique_arr_idx_arr[-1]
+        inp_class.source_decoding_result_np = np.where(source_decoding_result_np>last_idx,last_idx,source_decoding_result_np).reshape(inp_class.mapped_data.shape) # idx가 넘는애들을 근사함.
 
         if inp_class.ext == ".txt":
             inp_class.out_data = "".join(list(inp_class.inp_data_unique_arr[inp_class.source_decoding_result_np]))
@@ -151,7 +130,7 @@ def source_decoder(inp_class) :
             inp_class.out_data = inp_class.inp_data_unique_arr[inp_class.source_decoding_result_np].reshape(
                 inp_class.inp_data.shape)
 
-def inp_with_noise(inp_file_dir,source_coding_type,draw_huffmantree,modulation_scheme,mu,std):
+def make_result_class(inp_file_dir,source_coding_type,draw_huffmantree,modulation_scheme,mu,std):
     '''
     디지털통신 시스템에 입력값을 통과시키는 함수
     '''
@@ -164,19 +143,11 @@ def inp_with_noise(inp_file_dir,source_coding_type,draw_huffmantree,modulation_s
                                     mu,std)
 
     source_encoder(inp_class)
-
     modulation(inp_class)
-
     channel_awgn(inp_class)
-
     demodulation(inp_class)
     source_decoder(inp_class)
 
-#    cv2.imwrite('Test1.png', inp_class.inp_data)
-#   cv2.imwrite('Test2.png', inp_class.out_data)
-
-    return inp_class.out_data
-
-
+    return inp_class
 #inp_with_noise(inp,1,8)
 

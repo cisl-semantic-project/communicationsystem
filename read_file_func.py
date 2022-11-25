@@ -31,7 +31,8 @@ def read_file_func(inp_file_dir):
         bit_len = 8  # 이미지의 비트길이는 추후 수정해야할 듯
 
         inp_data_unique_arr, mapped_data, count = np.unique(inp_data, return_inverse=True, return_counts=True)
-        mapped_data.dtype = "uint8"
+        mapped_data = np.array(list(mapped_data),dtype='uint8')
+
         inp_data_unique_arr_idx_arr = np.unique(mapped_data)
 
     return inp_data, mapped_data, inp_data_unique_arr, inp_data_unique_arr_idx_arr, count, bit_len, ext
