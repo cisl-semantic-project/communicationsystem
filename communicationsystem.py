@@ -88,7 +88,6 @@ def source_decoder(inp_class) :
 
             for demodul_result_idx in demodul_result_idx_arr[0]  : # 2의 갯수가 i개인 디모듈 어레이들 뭉탱이
                 detection_result = np.argmin(np.power(inp_class.demodulation_result[demodul_result_idx].astype('int8') - code_arr_with_2i.astype('int8'), 2).sum(axis=1)) # bool로 하면 더 빨라질듯
-                #inp_class.source_decoding_result_np[demodul_result_idx] = code_arr[detection_result] # 나중에 BER등 결과그래프에서 쓰자
                 inp_class.source_decoding_result_np[demodul_result_idx] = code_idx_arr[detection_result] #mapped data 결과
 
 
