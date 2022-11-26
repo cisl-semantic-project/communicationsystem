@@ -1,9 +1,9 @@
 # simulation 예시
-![simul_image](for_study/EX_trans_img_simulator.png)
+![EX_trans_img_simulator](for_study/EX_trans_img_simulator.png)
 # Communication System
 ![system_diagram](for_study/system_diagram.png)
 # Huffman Tree
-![system_diagram](for_study/result_huffman.png)
+![result_huffman](for_study/result_huffman.png)
 
 코드 수정 목록
 ```python
