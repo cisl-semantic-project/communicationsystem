@@ -3,11 +3,11 @@ import numpy as np
 import communicationsystem
 import cv2
 
-#inp_file_dir = 'sample.txt'
-inp_file_dir = 'Lenna.png'
-#source _coding_type = "Huffman" # detection 방법이 잘못되서 전체적으로 어두운 결과가 나옴
-source_coding_type = "NoCompression"
-draw_huffmantree = False      # huffman이 아니면 True여도 안그림.
+inp_file_dir = 'sample.txt'
+#inp_file_dir = 'Lenna.png'
+source_coding_type = "Huffman" # detection 방법이 잘못되서 전체적으로 어두운 결과가 나옴
+#source_coding_type = "NoCompression"
+draw_huffmantree = True      # huffman이 아니면 True여도 안그림.
 modulation_scheme = "BPSK"
 mu = 0
 '''

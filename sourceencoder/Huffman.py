@@ -85,7 +85,7 @@ class Tree:
 		ax.set_ylim(min_y - 0.5, max_y + 0.5)
 		drawNode(root, ax)
 		plt.rcParams['axes.unicode_minus'] = False
-		plt.savefig('result_huffman.png')
+		plt.savefig('Test_dir/result_huffman.png')
 
 class HuffmanCoding:
 	def __init__(self, mapped_data,count,inp_data_unique_arr,inp_data_unique_arr_idx_arr,draw_huffmantree):

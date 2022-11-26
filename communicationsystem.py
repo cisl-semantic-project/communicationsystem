@@ -1,6 +1,6 @@
 import numpy as np
 from read_file_func import read_file_func
-from sourceencoder import huffman2
+from sourceencoder import Huffman
 class communicationsystem:
     def __init__(self, ext,inp_data,mapped_data,inp_data_unique_arr, inp_data_unique_arr_idx_arr,count,
                  source_coding_type="NoCompression",inp_bit_len = None, draw_huffmantree = False,
@@ -33,7 +33,7 @@ class communicationsystem:
 def source_encoder(inp_class):
 
     if inp_class.source_coding_type == "Huffman":
-        h = huffman2.HuffmanCoding(inp_class.mapped_data,inp_class.count,inp_class.inp_data_unique_arr,inp_class.inp_data_unique_arr_idx_arr , inp_class.draw_huffmantree)
+        h = Huffman.HuffmanCoding(inp_class.mapped_data,inp_class.count,inp_class.inp_data_unique_arr,inp_class.inp_data_unique_arr_idx_arr , inp_class.draw_huffmantree)
         source_coding_result_np,code_arr,mapped_data_to_code_bit_num = h.compress()
         inp_class.bit_num = np.sum(mapped_data_to_code_bit_num)
     elif inp_class.source_coding_type == "NoCompression":

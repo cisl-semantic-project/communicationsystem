@@ -2,11 +2,13 @@
 ![simul_image](for_study/EX_trans_img_simulator.png)
 # Communication System
 ![system_diagram](for_study/system_diagram.png)
+# Huffman Tree
+![system_diagram](for_study/result_huffman.png)
 
 코드 수정 목록
 ```python
 # 시작 _ 11.03
-
+# Nocompression _ 11.26
 ```
 
 ## Dependencies

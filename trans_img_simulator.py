@@ -7,8 +7,8 @@ def nothing(x):
 
 
 inp_file_dir = 'Lenna.png'
-#source_coding_type = "Huffman" #detection하는 방법에서 Complexity가 너무 높음 수정해야함.
-source_coding_type = "NoCompression"
+source_coding_type = "Huffman" #detection하는 방법에서 Complexity가 너무 높음 수정해야함.
+#source_coding_type = "NoCompression"
 draw_huffmantree = False      # huffman이 아니면 True여도 안그림.
 modulation_scheme = "BPSK"
 mu = 0
@@ -41,7 +41,7 @@ while(True):
     if std==0 :
         SNR_txt = "infinity"
     else:
-        SNR_txt = "%.1fdB"%(10 * log10(1 / (2 * std ^ 2)))
+        SNR_txt = "%.1fdB"%(10 * log10(1 / (2 * std ** 2)))
 
     result_class = communicationsystem.make_result_class(inp_file_dir, source_coding_type, draw_huffmantree,
                                                          modulation_scheme, mu, std)
