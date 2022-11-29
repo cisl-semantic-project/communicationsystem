@@ -11,6 +11,7 @@ class communicationsystem:
         self.ext = ext
         self.inp_data =inp_data
         self.mapped_data =mapped_data
+        self.mapped_data_bit_num = None
         self.count = count
         self.inp_data_unique_arr = inp_data_unique_arr
         self.inp_data_unique_arr_idx_arr = inp_data_unique_arr_idx_arr
@@ -23,7 +24,7 @@ class communicationsystem:
         self.modulation_scheme = modulation_scheme
 
         self.source_coding_result_np = None
-        self.bit_num = None
+        self.source_coding_result_bit_num = None
         self.modulation_result = None
         self.channel_result = None
         self.demodulation_result = None
@@ -35,13 +36,19 @@ def source_encoder(inp_class):
     if inp_class.source_coding_type == "Huffman":
         h = huffman2.HuffmanCoding(inp_class.mapped_data,inp_class.count,inp_class.inp_data_unique_arr,inp_class.inp_data_unique_arr_idx_arr , inp_class.draw_huffmantree)
         source_coding_result_np,code_arr,mapped_data_to_code_bit_num = h.compress()
-        inp_class.bit_num = np.sum(mapped_data_to_code_bit_num)
+
+        inp_class.mapped_data_bit_num =inp_class.mapped_data.size * inp_class.inp_data_unique_arr_idx_arr.size.bit_length()
+        inp_class.source_coding_result_bit_num = np.sum(mapped_data_to_code_bit_num)
+
     elif inp_class.source_coding_type == "NoCompression":
         inp_class.mapped_data.reshape(-1,)
         source_coding_result_np = np.unpackbits(inp_class.mapped_data.reshape(-1,1).view('uint8'), axis=1, count=inp_class.inp_bit_len,bitorder='little')  # 데이터를 바이트로 나누고 비트로 변경함
         code_arr = np.unpackbits(inp_class.inp_data_unique_arr_idx_arr.reshape(-1, 1), axis=1, count=inp_class.inp_bit_len,
                       bitorder='little')
-        inp_class.bit_num = np.sum(source_coding_result_np.size)
+
+        inp_class.mapped_data_bit_num = inp_class.mapped_data.size * inp_class.inp_bit_len
+        inp_class.source_coding_result_bit_num = np.sum(source_coding_result_np.size)
+
     else:
         raise Exception("압축 알고리즘 이름 확인 필요함.")
 

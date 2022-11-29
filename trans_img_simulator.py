@@ -41,7 +41,7 @@ while(True):
     if std==0 :
         SNR_txt = "infinity"
     else:
-        SNR_txt = "%.1fdB"%(10 * log10(1 / (2 * std ^ 2)))
+        SNR_txt = "%.1fdB"%(10 * log10(1 / (2 * std ** 2)))
 
     result_class = communicationsystem.make_result_class(inp_file_dir, source_coding_type, draw_huffmantree,
                                                          modulation_scheme, mu, std)

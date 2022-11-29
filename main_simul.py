@@ -5,9 +5,9 @@ import cv2
 
 #inp_file_dir = 'sample.txt'
 inp_file_dir = 'Lenna.png'
-#source _coding_type = "Huffman" # detection 방법이 잘못되서 전체적으로 어두운 결과가 나옴
-source_coding_type = "NoCompression"
-draw_huffmantree = False      # huffman이 아니면 True여도 안그림.
+source_coding_type = "Huffman" # detection 방법이 잘못되서 전체적으로 어두운 결과가 나옴
+#source_coding_type = "NoCompression"
+draw_huffmantree = True      # huffman이 아니면 True여도 안그림.
 modulation_scheme = "BPSK"
 mu = 0
 '''
@@ -22,10 +22,21 @@ std = 1/np.sqrt(2*Eb_N0)
 result_class = communicationsystem.make_result_class(inp_file_dir,source_coding_type,draw_huffmantree,
                                                modulation_scheme, mu, std)
 
-bit_num = result_class.bit_num #보내는 비트수
-err_bit_num = result_class.source_coding_result_np.size - np.count_nonzero(result_class.source_coding_result_np ==result_class.demodulation_result) #에러난 비트수
 
-BER = err_bit_num/bit_num
+#####압축률 확인
+result_class.source_coding_result_bit_num / result_class.mapped_data_bit_num
+'''
+    수학적 압축률(엔트로피 / mapped_data_bit_len)
+    prob_arr = result_class.count/np.sum(result_class.count)
+    -np.sum(prob_arr * np.log2(prob_arr))/ prob_arr.size.bit_length()
+'''
+#####
+
+
+#####BER 확인
+source_coding_result_bit_num = result_class.source_coding_result_bit_num #보내는 비트수
+err_bit_num = result_class.source_coding_result_np.size - np.count_nonzero(result_class.source_coding_result_np ==result_class.demodulation_result) #에러난 비트수
+BER = err_bit_num/source_coding_result_bit_num
 print("%.2fdB, %.4f "%(SNR, BER))
 '''
     수학적 BPSK의  BER 
@@ -34,6 +45,8 @@ print("%.2fdB, %.4f "%(SNR, BER))
     0.5 - 0.5*special.erf(1/(std*np.sqrt(2)))
 '''
 # 수학적 BER(100000 -np.nonzero((0.5+np.random.normal(0,1,100000))>0)[0].size)/100000
+#####BER 확인
+
 #result_class.inp_data, result_class.out_data
 #cv2.imwrite('Test_dir/Test1.png', result_class.inp_data)
 #cv2.imwrite('Test_dir/Test2.png', result_class.out_data)
