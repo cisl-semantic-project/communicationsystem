@@ -8,7 +8,10 @@ https://zephyrus1111.tistory.com/132
 import heapq
 import os
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
+from itertools import chain
+
 class Tree:
 	def __init__(self, root):
 		assert root.isRoot, 'node should be specified as root'
@@ -53,7 +56,7 @@ class Tree:
 					bbox = dict(boxstyle='square', fc=colors[node.getLevel() - 1], pad=1)
 				## 텍스트 표시
 				if node.char !=None:
-					out_txt = node.char +" : "+str(node.freq)+", "+out_txt
+					out_txt = str(node.char) +" : "+str(node.freq)+", "+out_txt
 				else :
 					out_txt = str(node.freq)
 				ax.text(node.x, node.y, out_txt, bbox=bbox, fontsize=10, ha='center', va='center')
@@ -82,13 +85,18 @@ class Tree:
 		ax.set_ylim(min_y - 0.5, max_y + 0.5)
 		drawNode(root, ax)
 		plt.rcParams['axes.unicode_minus'] = False
-		plt.savefig('result_huffman.png')
+		plt.savefig('Test_dir/result_huffman.png')
 
 class HuffmanCoding:
-	def __init__(self, path):
-		self.path = path
+	def __init__(self, mapped_data,count,inp_data_unique_arr,inp_data_unique_arr_idx_arr,draw_huffmantree):
+		self.mapped_data = mapped_data
+		self.count = count
+		self.inp_data_unique_arr = inp_data_unique_arr
+		self.inp_data_unique_arr_idx_arr = inp_data_unique_arr_idx_arr
+		self.draw_huffmantree = draw_huffmantree
 		self.heap = []
 		self.codes = {}
+		self.max_code_len = 0
 		self.reverse_mapping = {}
 		self.tree = None
 
@@ -132,21 +140,12 @@ class HuffmanCoding:
 			return self.freq == other.freq
 
 	# functions for compression:
-
-	def make_frequency_dict(self, text):
-		frequency = {}
-		for character in text:
-			if not character in frequency:
-				frequency[character] = 0
-			frequency[character] += 1
-		return frequency
-
-	def make_heap(self, frequency):
-		for key in frequency:
-			node = self.HeapNode(key, frequency[key]) #
+	def make_heap(self,):
+		for i in range(self.count.size):
+			node = self.HeapNode(self.inp_data_unique_arr[i],self.count[i])
 			heapq.heappush(self.heap, node) # 최소힙으로 만들어짐. 기준은 freq
 
-	def merge_nodes(self,drawing_onoff=False):
+	def merge_nodes(self,):
 		while(len(self.heap)>1):
 			node1 = heapq.heappop(self.heap)
 			node2 = heapq.heappop(self.heap)
@@ -165,115 +164,47 @@ class HuffmanCoding:
 			return
 
 		if(root.char != None):
-			self.codes[root.char] = current_code
-			self.reverse_mapping[current_code] = root.char
+			self.inp_data_unique_arr
+			inp_char = root.char
+
+			self.codes[inp_char] = current_code
+			self.reverse_mapping[current_code] = inp_char
 			root.code = current_code
+
+			if self.max_code_len < len(current_code):
+				self.max_code_len = len(current_code)
 			return
 
 		self.make_codes_helper(root.leftChild, current_code + "0")
 		self.make_codes_helper(root.rightChild, current_code + "1")
-
 
 	def make_codes(self):
 		root = heapq.heappop(self.heap) #HeapNode 클래스
 		current_code = ""
 		self.make_codes_helper(root, current_code)
 
-	def get_encoded_text(self, text):
-		encoded_text = ""
-		for character in text:
-			encoded_text += self.codes[character]
-		return encoded_text
+	def get_encoded_np(self,):
+		code_arr = np.array([list(map(int, list(x))) + [2] * (self.max_code_len - len(x)) for a, x in sorted(self.codes.items(), key=lambda x: x[0])])
+		code_num_arr = np.array([len(x) for a, x in sorted(self.codes.items(), key=lambda x: x[0])])
 
+		mapped_data_to_code = code_arr[self.mapped_data].astype('uint8')
+		mapped_data_to_code_bit_num = code_num_arr[self.mapped_data]
+		#inp_class.u_array_to_code = np.array([inp_class.data_to_code_dict[x] for x in inp_class.u_array], dtype='uint8')
+		#encoded_text_num = np.array([len(self.codes[x]) for x in self.inp_data_unique_arr])[inv].reshape(columned_inp.shape)
+		#encoded_text = inp_class.u_array_to_code[inv]
+		return mapped_data_to_code, code_arr,mapped_data_to_code_bit_num
 
-	def pad_encoded_text(self, encoded_text):
-		extra_padding = 8 - len(encoded_text) % 8
-		for i in range(extra_padding):
-			encoded_text += "0"
+	def compress(self,):
+		self.make_heap()
+		self.merge_nodes()  # 여기서 huffman coding에서 볼 수 있는  tree를 생성함. True를 통해 허프만 결과 저장가능
+		self.make_codes()
 
-		padded_info = "{0:08b}".format(extra_padding)
-		encoded_text = padded_info + encoded_text
-		return encoded_text
+		if self.draw_huffmantree:
+			self.tree.drawTree()
 
-	def get_byte_array(self, padded_encoded_text):
-		if(len(padded_encoded_text) % 8 != 0):
-			print("Encoded text not padded properly")
-			exit(0)
+		#encoded_np,encoded_num_np = self.get_encoded_np()
+		encoded_np, code_arr,mapped_data_to_code_bit_num = self.get_encoded_np()
 
-		b = bytearray()
-		for i in range(0, len(padded_encoded_text), 8):
-			byte = padded_encoded_text[i:i+8]
-			b.append(int(byte, 2))
-		return b
+		return encoded_np,code_arr, mapped_data_to_code_bit_num
 
-
-	def compress(self,draw_graph = False):
-		filename, file_extension = os.path.splitext(self.path)
-		output_path = filename + ".bin"
-
-		with open(self.path, 'r+',encoding='UTF-8') as file, open(output_path, 'wb') as output:
-			text = file.read()
-			text = text.rstrip()
-
-			frequency = self.make_frequency_dict(text)
-			self.make_heap(frequency) #
-			self.merge_nodes(True) #여기서 huffman coding에서 볼 수 있는  tree를 생성함. True를 통해 허프만 결과 저장가능
-			self.make_codes()
-			if draw_graph:
-				self.tree.drawTree()
-
-			encoded_text = self.get_encoded_text(text)
-			padded_encoded_text = self.pad_encoded_text(encoded_text)
-
-			b = self.get_byte_array(padded_encoded_text)
-			output.write(bytes(b))
-
-		print("Compressed")
-		return output_path
-
-
-	""" functions for decompression: """
-	def remove_padding(self, padded_encoded_text):
-		padded_info = padded_encoded_text[:8]
-		extra_padding = int(padded_info, 2)
-
-		padded_encoded_text = padded_encoded_text[8:] 
-		encoded_text = padded_encoded_text[:-1*extra_padding]
-
-		return encoded_text
-
-	def decode_text(self, encoded_text):
-		current_code = ""
-		decoded_text = ""
-
-		for bit in encoded_text:
-			current_code += bit
-			if(current_code in self.reverse_mapping):
-				character = self.reverse_mapping[current_code]
-				decoded_text += character
-				current_code = ""
-
-		return decoded_text
-	def decompress(self, input_path):
-		filename, file_extension = os.path.splitext(self.path)
-		output_path = filename + "_decompressed" + ".txt"
-
-		with open(input_path, 'rb') as file, open(output_path, 'w') as output:
-			bit_string = ""
-
-			byte = file.read(1)
-			while(len(byte) > 0):
-				byte = ord(byte)
-				bits = bin(byte)[2:].rjust(8, '0')
-				bit_string += bits
-				byte = file.read(1)
-
-			encoded_text = self.remove_padding(bit_string)
-
-			decompressed_text = self.decode_text(encoded_text)
-			
-			output.write(decompressed_text)
-
-		print("Decompressed")
-		return output_path
 

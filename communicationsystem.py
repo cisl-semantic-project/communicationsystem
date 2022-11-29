@@ -1,6 +1,6 @@
 import numpy as np
 from read_file_func import read_file_func
-from sourceencoder import huffman2
+from sourceencoder import Huffman
 class communicationsystem:
     def __init__(self, ext,inp_data,mapped_data,inp_data_unique_arr, inp_data_unique_arr_idx_arr,count,
                  source_coding_type="NoCompression",inp_bit_len = None, draw_huffmantree = False,
@@ -34,7 +34,7 @@ class communicationsystem:
 def source_encoder(inp_class):
 
     if inp_class.source_coding_type == "Huffman":
-        h = huffman2.HuffmanCoding(inp_class.mapped_data,inp_class.count,inp_class.inp_data_unique_arr,inp_class.inp_data_unique_arr_idx_arr , inp_class.draw_huffmantree)
+        h = Huffman.HuffmanCoding(inp_class.mapped_data,inp_class.count,inp_class.inp_data_unique_arr,inp_class.inp_data_unique_arr_idx_arr , inp_class.draw_huffmantree)
         source_coding_result_np,code_arr,mapped_data_to_code_bit_num = h.compress()
 
         inp_class.mapped_data_bit_num =inp_class.mapped_data.size * inp_class.inp_data_unique_arr_idx_arr.size.bit_length()
@@ -95,7 +95,6 @@ def source_decoder(inp_class) :
 
             for demodul_result_idx in demodul_result_idx_arr[0]  : # 2의 갯수가 i개인 디모듈 어레이들 뭉탱이
                 detection_result = np.argmin(np.power(inp_class.demodulation_result[demodul_result_idx].astype('int8') - code_arr_with_2i.astype('int8'), 2).sum(axis=1)) # bool로 하면 더 빨라질듯
-                #inp_class.source_decoding_result_np[demodul_result_idx] = code_arr[detection_result] # 나중에 BER등 결과그래프에서 쓰자
                 inp_class.source_decoding_result_np[demodul_result_idx] = code_idx_arr[detection_result] #mapped data 결과
 
 
