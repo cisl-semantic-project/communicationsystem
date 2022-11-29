@@ -7,14 +7,16 @@ import cv2
 inp_file_dir = 'Lenna.png'
 source_coding_type = "Huffman" # detection 방법이 잘못되서 전체적으로 어두운 결과가 나옴
 #source_coding_type = "NoCompression"
-draw_huffmantree = True      # huffman이 아니면 True여도 안그림.
+draw_huffmantree = False      # huffman이 아니면 True여도 안그림.
 modulation_scheme = "BPSK"
 mu = 0
-'''
+''' ## standard deviation 기준으로 SNR 입력
 std = np.sqrt(0.5) #SNR = 0dB
 Eb_N0 = 1/(2*std**2)
 SNR = 10*np.log10(Eb_N0)
 '''
+
+## SNR기준으로 standard deviation 입력
 SNR = 2
 Eb_N0 = 10**(SNR/10)
 std = 1/np.sqrt(2*Eb_N0)
@@ -44,8 +46,7 @@ print("%.2fdB, %.4f "%(SNR, BER))
     std = 0.5
     0.5 - 0.5*special.erf(1/(std*np.sqrt(2)))
 '''
-# 수학적 BER(100000 -np.nonzero((0.5+np.random.normal(0,1,100000))>0)[0].size)/100000
-#####BER 확인
+#####
 
 #result_class.inp_data, result_class.out_data
 #cv2.imwrite('Test_dir/Test1.png', result_class.inp_data)

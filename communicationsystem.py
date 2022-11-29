@@ -80,14 +80,39 @@ def channel_decoding(bit_stream):
 
     return bit_stream
 def source_decoder(inp_class) :
-
+    detection_result_np = np.copy(inp_class.demodulation_result)
+    inp_class.source_decoding_result_np = np.copy(inp_class.mapped_data)
     if inp_class.source_coding_type == "Huffman":
 
-        inp_class.source_decoding_result_np = np.zeros_like(inp_class.mapped_data)
+        # 채널의 영향으로 깨진 데이터 idx 뭉탱이
+        # 채널의 영향으로 깨진 데이터 뭉탱이 inp_class.demodulation_result[error_idx] 코드북내에 있어도 깨지면 깨진걸로 본다. 이건 생각해봐야할 문제.
+        error_idx = np.where(np.all(inp_class.demodulation_result == inp_class.source_coding_result_np, axis=1)==False)[0]
 
-        u1,v1 = np.unique((inp_class.code_arr == 2).sum(axis=1),return_inverse=True) # 2의 갯수 array, code 별 2의 갯수,
+        code_2num_in_codebook=(inp_class.code_arr == 2).sum(axis=1) #코드북내의 코드별 2의 갯수
+        # u1: codebook의 2의 갯수 array, v1 : code 별 u1 idx
+        u1, v1 = np.unique(code_2num_in_codebook, return_inverse=True)
+
+        # u3 : 2의 갯수 array, v3 : 깨진 데이터의 code 별 u3 idx, c3는 2의 갯수별 깨진 데이터의 갯수
+        u3, v3, c3= np.unique((inp_class.demodulation_result[error_idx] == 2).sum(axis=1), return_inverse=True,return_counts=True)
+
+        for i in range(u3.size):
+            # 2의 갯수 별 codebook arr
+            idx_arr = np.where(code_2num_in_codebook == u3[i])[0]
+
+            random_idx_arr = np.random.randint(idx_arr.size, size=c3[i])
+            # 깨진 데이터의 2의 갯수별 demoul결과의 array를 같은 2의 갯수의 코드로 랜덤하게 바꾸겠다.
+            # refer_arr = inp_class.code_arr[idx_arr]
+            #detection_result_np[error_idx][np.where(v3==i)] = refer_arr[np.random.randint(refer_arr.shape[0],size = c3[i])]
+
+            # source decoding의 결과는 idx만 가져오는 결과
+            error_idx
+            np.where(v3 == i)
+            inp_class.source_decoding_result_np[error_idx[np.where(v3==i)]] = idx_arr[random_idx_arr]
+
+        '''  아래는 ML detection, 그러나 해당 방법은 너무 시간이 오래 걸린다. 
+        u1, v1 = np.unique((inp_class.code_arr == 2).sum(axis=1),
+                           return_inverse=True)  # u1: 2의 갯수 array, v1 : code 별 u1 idx
         u2,v2 = np.unique((inp_class.demodulation_result == 2).sum(axis=1),return_inverse=True)
-
         for i in u1: #2의 갯수가 가장작은것 부터 큰것까지 순회하겠음.
             code_idx_arr = np.where(v1 == i)[0]
             code_arr_with_2i = inp_class.code_arr[code_idx_arr].astype('int8') # 2의 갯수가 i개인 코드 어레이들 뭉탱이
@@ -96,7 +121,7 @@ def source_decoder(inp_class) :
             for demodul_result_idx in demodul_result_idx_arr[0]  : # 2의 갯수가 i개인 디모듈 어레이들 뭉탱이
                 detection_result = np.argmin(np.power(inp_class.demodulation_result[demodul_result_idx].astype('int8') - code_arr_with_2i.astype('int8'), 2).sum(axis=1)) # bool로 하면 더 빨라질듯
                 inp_class.source_decoding_result_np[demodul_result_idx] = code_idx_arr[detection_result] #mapped data 결과
-
+        '''
 
         if inp_class.ext == ".txt":
             inp_class.out_data = "".join(list(inp_class.inp_data_unique_arr[inp_class.source_decoding_result_np]))

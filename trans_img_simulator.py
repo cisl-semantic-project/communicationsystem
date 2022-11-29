@@ -4,11 +4,9 @@ from math import log10
 def nothing(x):
     pass
 
-
-
 inp_file_dir = 'Lenna.png'
-source_coding_type = "Huffman" #detection하는 방법에서 Complexity가 너무 높음 수정해야함.
-#source_coding_type = "NoCompression"
+#source_coding_type = "Huffman" #detection하는 방법에서 Complexity가 너무 높음 수정해야함.
+source_coding_type = "NoCompression"
 draw_huffmantree = False      # huffman이 아니면 True여도 안그림.
 modulation_scheme = "BPSK"
 mu = 0
