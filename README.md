@@ -5,10 +5,15 @@
 # Huffman Tree
 ![result_huffman](for_study/result_huffman.png)
 
+# Repetition code 성능
+![Repetition_code_result](for_study/Repetition_code_result.png)
+
+
 코드 수정 목록
 ```python
 # 시작 _ 11.03
 # Nocompression _ 11.26
+# Repetition_code _ 11.30
 ```
 
 ## Dependencies

@@ -1,9 +1,10 @@
 import numpy as np
 from read_file_func import read_file_func
 from sourceencoder import Huffman
+
 class communicationsystem:
     def __init__(self, ext,inp_data,mapped_data,inp_data_unique_arr, inp_data_unique_arr_idx_arr,count,
-                 source_coding_type="NoCompression",inp_bit_len = None, draw_huffmantree = False,
+                 source_coding_type,channel_coding_type,inp_bit_len = None, draw_huffmantree = False,
                  modulation_scheme = None,
                  mu = 0, std =1):
 
@@ -17,6 +18,7 @@ class communicationsystem:
         self.inp_data_unique_arr_idx_arr = inp_data_unique_arr_idx_arr
         self.code_arr = None
         self.source_coding_type = source_coding_type
+        self.channel_coding_type = channel_coding_type
         self.inp_bit_len = inp_bit_len
         self.draw_huffmantree = draw_huffmantree
         self.mu = mu
@@ -25,9 +27,12 @@ class communicationsystem:
 
         self.source_coding_result_np = None
         self.source_coding_result_bit_num = None
+        self.channel_coding_result_np = None
+        self.channel_coding_result_bit_num = None
         self.modulation_result = None
         self.channel_result = None
         self.demodulation_result = None
+        self.channel_decoding_result_np = None
         self.source_decoding_result_np = None
         self.out_data = None
 
@@ -55,12 +60,19 @@ def source_encoder(inp_class):
     inp_class.source_coding_result_np = source_coding_result_np
     inp_class.code_arr = code_arr
 
-def channel_coding(bit_stream):
-    return bit_stream
+def channel_coding(inp_class):
+    if inp_class.channel_coding_type == "NoChannelCoding":
+        inp_class.channel_coding_result_np = np.copy(inp_class.source_coding_result_np)
+        inp_class.channel_coding_result_bit_num = inp_class.source_coding_result_bit_num
+    elif inp_class.channel_coding_type == "Repetition":
+        inp_class.channel_coding_result_np = np.tile(inp_class.source_coding_result_np, (3, 1, 1))
+        inp_class.channel_coding_result_bit_num = inp_class.source_coding_result_bit_num * 3
+    else:
+        assert False,"channel_coding_type 확인해야함."
 def modulation(inp_class):
 
     if inp_class.modulation_scheme == "BPSK":
-        inp_class.modulation_result = np.where(inp_class.source_coding_result_np == 2, np.nan, inp_class.source_coding_result_np)
+        inp_class.modulation_result = np.where(inp_class.channel_coding_result_np  == 2, np.nan, inp_class.channel_coding_result_np)
         inp_class.modulation_result = np.where(inp_class.modulation_result == 0, -1, inp_class.modulation_result)
     else:
         raise Exception('모듈레이션 scheme 확인필요')
@@ -76,24 +88,38 @@ def demodulation(inp_class):
 
     else:
         raise Exception('모듈레이션 scheme 확인필요')
-def channel_decoding(bit_stream):
+def channel_decoding(inp_class):
 
-    return bit_stream
+    if inp_class.channel_coding_type == "NoChannelCoding":
+        inp_class.channel_decoding_result_np = np.copy(inp_class.demodulation_result)
+    elif inp_class.channel_coding_type == "Repetition":
+        inp_class.channel_decoding_result_np = np.where(inp_class.demodulation_result==2,np.nan,inp_class.demodulation_result)
+
+        inp_class.channel_decoding_result_np =np.sum(inp_class.channel_decoding_result_np, axis=0)
+
+        inp_class.channel_decoding_result_np = np.where(inp_class.channel_decoding_result_np < 2, 0,
+                                                        inp_class.channel_decoding_result_np)
+        inp_class.channel_decoding_result_np = np.where(inp_class.channel_decoding_result_np>1,1,inp_class.channel_decoding_result_np)
+        inp_class.channel_decoding_result_np = np.where(np.isnan(inp_class.channel_decoding_result_np),2,inp_class.channel_decoding_result_np).astype('uint8')
+
+    else:
+        assert False,"channel_coding_type 확인해야함."
+
 def source_decoder(inp_class) :
-    detection_result_np = np.copy(inp_class.demodulation_result)
+    detection_result_np = np.copy(inp_class.channel_decoding_result_np)
     inp_class.source_decoding_result_np = np.copy(inp_class.mapped_data)
     if inp_class.source_coding_type == "Huffman":
 
         # 채널의 영향으로 깨진 데이터 idx 뭉탱이
-        # 채널의 영향으로 깨진 데이터 뭉탱이 inp_class.demodulation_result[error_idx] 코드북내에 있어도 깨지면 깨진걸로 본다. 이건 생각해봐야할 문제.
-        error_idx = np.where(np.all(inp_class.demodulation_result == inp_class.source_coding_result_np, axis=1)==False)[0]
+        # 채널의 영향으로 깨진 데이터 뭉탱이 inp_class.channel_decoding_result_np[error_idx] 코드북내에 있어도 깨지면 깨진걸로 본다. 이건 생각해봐야할 문제.
+        error_idx = np.where(np.all(inp_class.channel_decoding_result_np == inp_class.source_coding_result_np, axis=1)==False)[0]
 
         code_2num_in_codebook=(inp_class.code_arr == 2).sum(axis=1) #코드북내의 코드별 2의 갯수
         # u1: codebook의 2의 갯수 array, v1 : code 별 u1 idx
-        u1, v1 = np.unique(code_2num_in_codebook, return_inverse=True)
+        #u1, v1 = np.unique(code_2num_in_codebook, return_inverse=True)
 
         # u3 : 2의 갯수 array, v3 : 깨진 데이터의 code 별 u3 idx, c3는 2의 갯수별 깨진 데이터의 갯수
-        u3, v3, c3= np.unique((inp_class.demodulation_result[error_idx] == 2).sum(axis=1), return_inverse=True,return_counts=True)
+        u3, v3, c3= np.unique((inp_class.channel_decoding_result_np[error_idx] == 2).sum(axis=1), return_inverse=True,return_counts=True)
 
         for i in range(u3.size):
             # 2의 갯수 별 codebook arr
@@ -105,21 +131,19 @@ def source_decoder(inp_class) :
             #detection_result_np[error_idx][np.where(v3==i)] = refer_arr[np.random.randint(refer_arr.shape[0],size = c3[i])]
 
             # source decoding의 결과는 idx만 가져오는 결과
-            error_idx
-            np.where(v3 == i)
             inp_class.source_decoding_result_np[error_idx[np.where(v3==i)]] = idx_arr[random_idx_arr]
 
         '''  아래는 ML detection, 그러나 해당 방법은 너무 시간이 오래 걸린다. 
         u1, v1 = np.unique((inp_class.code_arr == 2).sum(axis=1),
                            return_inverse=True)  # u1: 2의 갯수 array, v1 : code 별 u1 idx
-        u2,v2 = np.unique((inp_class.demodulation_result == 2).sum(axis=1),return_inverse=True)
+        u2,v2 = np.unique((inp_class.channel_decoding_result_np == 2).sum(axis=1),return_inverse=True)
         for i in u1: #2의 갯수가 가장작은것 부터 큰것까지 순회하겠음.
             code_idx_arr = np.where(v1 == i)[0]
             code_arr_with_2i = inp_class.code_arr[code_idx_arr].astype('int8') # 2의 갯수가 i개인 코드 어레이들 뭉탱이
             demodul_result_idx_arr = np.where(v2 == i)
 
             for demodul_result_idx in demodul_result_idx_arr[0]  : # 2의 갯수가 i개인 디모듈 어레이들 뭉탱이
-                detection_result = np.argmin(np.power(inp_class.demodulation_result[demodul_result_idx].astype('int8') - code_arr_with_2i.astype('int8'), 2).sum(axis=1)) # bool로 하면 더 빨라질듯
+                detection_result = np.argmin(np.power(inp_class.channel_decoding_result_np[demodul_result_idx].astype('int8') - code_arr_with_2i.astype('int8'), 2).sum(axis=1)) # bool로 하면 더 빨라질듯
                 inp_class.source_decoding_result_np[demodul_result_idx] = code_idx_arr[detection_result] #mapped data 결과
         '''
 
@@ -131,8 +155,8 @@ def source_decoder(inp_class) :
 
 
     elif inp_class.source_coding_type == "NoCompression":
-        demodulation_result = np.copy(inp_class.demodulation_result)
-        source_decoding_result_np = np.packbits(demodulation_result, axis=1, bitorder='little').view(inp_class.mapped_data.dtype)
+        channel_decoding_result_np = np.copy(inp_class.channel_decoding_result_np)
+        source_decoding_result_np = np.packbits(channel_decoding_result_np, axis=1, bitorder='little').view(inp_class.mapped_data.dtype)
         last_idx = inp_class.inp_data_unique_arr_idx_arr[-1]
         inp_class.source_decoding_result_np = np.where(source_decoding_result_np>last_idx,last_idx,source_decoding_result_np).reshape(inp_class.mapped_data.shape) # idx가 넘는애들을 근사함.
 
@@ -142,18 +166,22 @@ def source_decoder(inp_class) :
             inp_class.out_data = inp_class.inp_data_unique_arr[inp_class.source_decoding_result_np].reshape(
                 inp_class.inp_data.shape)
 
-def make_result_class(inp_file_dir,source_coding_type,draw_huffmantree,modulation_scheme,mu,std):
+def make_result_class(inp_file_dir,source_coding_type,channel_coding_type,draw_huffmantree,modulation_scheme,mu,std):
     inp_data, mapped_data, inp_data_unique_arr,inp_data_unique_arr_idx_arr, count, bit_len, ext = read_file_func(inp_file_dir)
 
     inp_class = communicationsystem(ext, inp_data, mapped_data,inp_data_unique_arr, inp_data_unique_arr_idx_arr,count,
-                                    source_coding_type,bit_len,draw_huffmantree,
+                                    source_coding_type,channel_coding_type, bit_len,draw_huffmantree,
                                     modulation_scheme,
                                     mu,std)
 
     source_encoder(inp_class)
+    channel_coding(inp_class)
     modulation(inp_class)
+
     channel_awgn(inp_class)
+
     demodulation(inp_class)
+    channel_decoding(inp_class)
     source_decoder(inp_class)
 
     return inp_class

@@ -1,15 +1,5 @@
-"""
-출처
-author: Bhrigu Srivastava
-website: https:bhrigu.me
-https://github.com/bhrigu123/huffman-coding
-https://zephyrus1111.tistory.com/132
-"""
-
-import heapq
-import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
+
 
 class Tree:
 	def __init__(self, root):
