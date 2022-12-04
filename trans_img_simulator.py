@@ -7,9 +7,9 @@ def nothing(x):
 
 inp_file_dir = 'Lenna.png'
 source_coding_type = "Huffman"
-#source_coding_type = "NoCompression"
-channel_coding_type = "NoChannelCoding"
-#channel_coding_type = "Repetition"
+source_coding_type = "NoCompression"
+#channel_coding_type = "NoChannelCoding"
+channel_coding_type = "Repetition"
 draw_huffmantree = False      # huffman이 아니면 True여도 안그림.
 modulation_scheme = "BPSK"
 mu = 0
