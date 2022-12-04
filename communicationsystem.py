@@ -7,34 +7,33 @@ class communicationsystem:
                  source_coding_type,channel_coding_type,inp_bit_len = None, draw_huffmantree = False,
                  modulation_scheme = None,
                  mu = 0, std =1):
+        
+        self.ext = ext                                                  # 입력 파일 타입. (txt,)
+        self.inp_data =inp_data                                         # 입력 데이터. (781600...)
+        self.inp_data_unique_arr = inp_data_unique_arr                  # 입력 데이터의 unique arr. (01678...)
+        self.inp_data_unique_arr_idx_arr = inp_data_unique_arr_idx_arr  # 입력 데이터의 unique arr의 idx. (01234...), mapped_data와 관련있음.
+        self.mapped_data =mapped_data                                   # 입력 데이터를 순서대로 매핑한 arr. (341200...)
+        self.count = count                                              # 각 매핑데이터의 빈도 arr. (21111...)
+        self.source_coding_type = source_coding_type                    # 소스코딩 타입. (Huffman,)
+        self.channel_coding_type = channel_coding_type                  # 채널코딩 타입. (Repetition,)
+        self.inp_bit_len = inp_bit_len                                  # 입력 비트 길이, txt면 inp_data_unique_arr로 결정, png면 8로 고정.
+        self.draw_huffmantree = draw_huffmantree                        # tree 결과 그릴지 여부.
+        self.mu = mu                                                    # 가우시안 분포의 평균.
+        self.std = std                                                  # 가우시안 분포의 표준편차.
+        self.modulation_scheme = modulation_scheme                      # 모듈레이션 타입. (BPSK,)
 
-        ##source코딩에 필요한 파라미터
-        self.ext = ext
-        self.inp_data =inp_data
-        self.mapped_data =mapped_data
-        self.mapped_data_bit_num = None
-        self.count = count
-        self.inp_data_unique_arr = inp_data_unique_arr
-        self.inp_data_unique_arr_idx_arr = inp_data_unique_arr_idx_arr
-        self.code_arr = None
-        self.source_coding_type = source_coding_type
-        self.channel_coding_type = channel_coding_type
-        self.inp_bit_len = inp_bit_len
-        self.draw_huffmantree = draw_huffmantree
-        self.mu = mu
-        self.std = std
-        self.modulation_scheme = modulation_scheme
-
-        self.source_coding_result_np = None
-        self.source_coding_result_bit_num = None
-        self.channel_coding_result_np = None
-        self.channel_coding_result_bit_num = None
-        self.modulation_result = None
-        self.channel_result = None
-        self.demodulation_result = None
-        self.channel_decoding_result_np = None
-        self.source_decoding_result_np = None
-        self.out_data = None
+        self.mapped_data_bit_num = None                                 # mapped_data가 가진 bit 총 갯수, 소스코딩에따라 달라짐.
+        self.code_arr = None                                            # mapped_data 각각이 가진 bit code,inp_data_unique_arr_idx_arr 와 순서 동일, 길이가 다를 경우 2가 포함되어있음.
+        self.source_coding_result_np = None                             # 소스코딩 결과.
+        self.source_coding_result_bit_num = None                        # 소스코딩 결과의 비트수, 2가 제외되어 계산되어있음.
+        self.channel_coding_result_np = None                            # 채널코딩 결과.
+        self.channel_coding_result_bit_num = None                       # 채널코딩 결과의 비트수, source_coding_result_bit_num로 계산함.
+        self.modulation_result = None                                   # 모듈레이션 결과 2는 nan으로 바뀜.
+        self.channel_result = None                                      # 채널겪고난 후 결과
+        self.demodulation_result = None                                 # 디모듈레이션 결과. nan이 다시 2로 바뀜.
+        self.channel_decoding_result_np = None                          # 채널 디코딩 결과.
+        self.source_decoding_result_np = None                           # 소스 디코딩 결과.
+        self.out_data = None                                            # 입력 데이터형태로 변경된 결과물.
 
 def source_encoder(inp_class):
 
@@ -167,10 +166,10 @@ def source_decoder(inp_class) :
                 inp_class.inp_data.shape)
 
 def make_result_class(inp_file_dir,source_coding_type,channel_coding_type,draw_huffmantree,modulation_scheme,mu,std):
-    inp_data, mapped_data, inp_data_unique_arr,inp_data_unique_arr_idx_arr, count, bit_len, ext = read_file_func(inp_file_dir)
+    inp_data, mapped_data, inp_data_unique_arr,inp_data_unique_arr_idx_arr, count, inp_bit_len, ext = read_file_func(inp_file_dir)
 
     inp_class = communicationsystem(ext, inp_data, mapped_data,inp_data_unique_arr, inp_data_unique_arr_idx_arr,count,
-                                    source_coding_type,channel_coding_type, bit_len,draw_huffmantree,
+                                    source_coding_type,channel_coding_type, inp_bit_len,draw_huffmantree,
                                     modulation_scheme,
                                     mu,std)
 
