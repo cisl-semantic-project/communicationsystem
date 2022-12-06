@@ -6,15 +6,15 @@ import cv2
 
 #inp_file_dir = 'sample.txt'
 inp_file_dir = 'Lenna.png'
-source_coding_type = "Huffman"
-#source_coding_type = "NoCompression"
-channel_coding_type = "Repetition"
-#channel_coding_type = "NoChannelCoding"
+#source_coding_type = "Huffman"
+source_coding_type = "NoCompression"
+#channel_coding_type = "Repetition"
+channel_coding_type = "NoChannelCoding"
 
 draw_huffmantree = False      # huffman이 아니면 True여도 안그림.
 modulation_scheme = "BPSK"
 mu = 0
-SNR = 1 #dB
+SNR = 0 #dB
 std = between_std_SNR.SNR_2_std(SNR)
 
 result_class = communicationsystem.make_result_class(inp_file_dir,source_coding_type,channel_coding_type,draw_huffmantree,
